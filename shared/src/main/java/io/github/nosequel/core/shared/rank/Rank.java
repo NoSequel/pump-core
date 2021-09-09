@@ -1,5 +1,6 @@
 package io.github.nosequel.core.shared.rank;
 
+import io.github.nosequel.core.shared.PumpConstants;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -24,7 +25,7 @@ public class Rank {
         this.uniqueId = uniqueId;
         this.name = name;
 
-        for (Map.Entry<String, RankMetadata<?>> entry : RankHandler.DEFAULT_RANK_METADATA.entrySet()) {
+        for (Map.Entry<String, RankMetadata<?>> entry : PumpConstants.DEFAULT_RANK_METADATA.entrySet()) {
             this.metadata.put(entry.getKey(), entry.getValue());
         }
     }

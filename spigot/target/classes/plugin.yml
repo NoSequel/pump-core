@@ -1,0 +1,4 @@
+main: io.github.nosequel.core.spigot.PumpJavaPlugin
+name: pump-bukkit
+author: NV6
+version: 1.0-SNAPSHOT

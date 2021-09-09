@@ -1,23 +1,25 @@
 package io.github.nosequel.core.shared.rank;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @Getter
-@RequiredArgsConstructor
+@Setter
+@AllArgsConstructor
 public class RankMetadata<T> {
 
-    private final T value;
+    private T value;
 
     public String valueAsString() {
         return (String) value;
     }
 
     public int valueAsInteger() {
-        return (int) value;
+        return (Integer) value;
     }
 
     public boolean valueAsBoolean() {
-        return (boolean) value;
+        return (Boolean) value;
     }
 }

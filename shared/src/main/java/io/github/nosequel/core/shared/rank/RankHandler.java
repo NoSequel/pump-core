@@ -1,6 +1,8 @@
 package io.github.nosequel.core.shared.rank;
 
 import com.google.gson.Gson;
+import io.github.nosequel.core.shared.PumpConstants;
+import io.github.nosequel.core.shared.profile.adapter.RankTypeAdapter;
 import io.github.nosequel.storage.mongo.MongoStorageHandler;
 import io.github.nosequel.storage.mongo.provider.MongoStorageProvider;
 import lombok.Getter;
@@ -13,14 +15,44 @@ public class RankHandler extends MongoStorageProvider<Rank> {
 
     private final Set<Rank> ranks = new HashSet<>();
 
-    public static Map<String, RankMetadata<?>> DEFAULT_RANK_METADATA = new HashMap<String, RankMetadata<?>>() {{
-        put("prefix", new RankMetadata<>(""));
-        put("suffix", new RankMetadata<>(""));
-        put("weight", new RankMetadata<>(0));
-    }};
-
     public RankHandler(MongoStorageHandler storageHandler) {
         super("ranks", storageHandler, Rank.class, new Gson());
+
+        PumpConstants.RANK_TYPE_ADAPTER = new RankTypeAdapter(this);
+    }
+
+    public void load() {
+        // load all ranks from the database
+        // don't call async, should only be called on startup.
+        this.fetchAllEntries()
+                .join()
+                .forEach((keys, ranks) -> this.register(ranks));
+
+        // load the default ranks in case it's required
+        this.loadDefaults();
+    }
+
+    public void save() {
+        for (Rank rank : this.ranks) {
+            this.setEntry(rank.getUniqueId().toString(), rank);
+        }
+    }
+
+    /**
+     * Load all of the registered default ranks.
+     * <p>
+     * This loops through all ranks within the {@link PumpConstants#DEFAULT_RANKS}
+     * set and registers them if the rank could
+     * not be found within the rank handler ranks collection.
+     */
+    public void loadDefaults() {
+        System.out.println(this.ranks);
+
+        for (Rank rank : PumpConstants.DEFAULT_RANKS) {
+            if (!this.find(rank.getName()).isPresent()) {
+                this.register(rank);
+            }
+        }
     }
 
     /**
@@ -68,12 +100,12 @@ public class RankHandler extends MongoStorageProvider<Rank> {
      * @param rank the rank to register
      */
     public void register(Rank rank) {
-        for (Map.Entry<String, RankMetadata<?>> entry : DEFAULT_RANK_METADATA.entrySet()) {
+        this.ranks.add(rank);
+
+        for (Map.Entry<String, RankMetadata<?>> entry : PumpConstants.DEFAULT_RANK_METADATA.entrySet()) {
             if (!rank.getMetadata().containsKey(entry.getKey())) {
                 rank.getMetadata().put(entry.getKey(), entry.getValue());
             }
         }
-
-        this.ranks.add(rank);
     }
 }
